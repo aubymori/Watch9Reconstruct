@@ -6,6 +6,7 @@ Introduced in 2017, Watch9 was the Watch page's layout up until 2019. This users
 
 # Screenshots
 ![Watch page, with Watch9 Reconstruct active.](assets/Preview.png)
+![Old autoplay with "Up next" title](assets/Autoplay.png)
 
 # FaQ
 **Q: How do I change options?**
