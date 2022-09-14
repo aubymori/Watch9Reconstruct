@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Watch9 Reconstruct
-// @version      2.1.0
+// @version      2.1.1
 // @description  Restores the old watch layout from before 2019
 // @author       Aubrey P.
 // @icon         https://www.youtube.com/favicon.ico
@@ -33,7 +33,7 @@ const w9rOptions = {
 
 /**
  * Wait for a selector to exist
- * 
+ *
  * @param {string}       selector  CSS Selector
  * @param {HTMLElement}  base      Element to search inside
  * @returns {Node}
@@ -103,7 +103,7 @@ function formatSubCount(count, hl = "en") {
 
 /**
  * Parse document.cookie
- * 
+ *
  * @returns {object}
  */
 function parseCookies() {
@@ -120,7 +120,7 @@ function parseCookies() {
 
 /**
  * Parse YouTube's PREF cookie.
- * 
+ *
  * @param {string} pref  PREF cookie content
  * @returns {object}
  */
@@ -135,7 +135,7 @@ function parsePref(pref) {
 
 /**
  * Is autoplay enabled?
- * 
+ *
  * @returns {boolean}
  */
 function autoplayState() {
@@ -191,7 +191,7 @@ function shouldHaveAutoplay() {
 
 /**
  * Remove bloaty action buttons.
- * 
+ *
  * @returns {void}
  */
 function removeBloatButtons() {
@@ -218,7 +218,7 @@ function removeBloatButtons() {
 
 /**
  * Build the classic compact autoplay renderer.
- * 
+ *
  * @returns {void}
  */
 function buildAutoplay() {
@@ -392,50 +392,50 @@ document.addEventListener("DOMContentLoaded", function tmp() {
     </style>
     `);
     if (w9rOptions.oldAutoplay) document.head.insertAdjacentHTML("beforeend", `
-        <style id="compact-autoplay-fix">
-        yt-related-chip-cloud-renderer {
-            display: none;
-        }
+    <style id="compact-autoplay-fix">
+    yt-related-chip-cloud-renderer {
+        display: none;
+    }
 
-        ytd-compact-autoplay-renderer {
-            padding-bottom: 8px;
-            border-bottom: 1px solid var(--yt-spec-10-percent-layer);
-            margin-bottom: 16px;
-        }
-        
-        ytd-compact-autoplay-renderer ytd-compact-video-renderer {
-            margin: 0 !important;
-            padding-bottom: 8px;
-        }
-        
-        #head.ytd-compact-autoplay-renderer {
-            margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-        }
-        
-        #upnext.ytd-compact-autoplay-renderer {
-            color: var(--yt-spec-text-primary);
-            font-size: 1.6rem;
-            flex-grow: 1;
-        }
-        
-        #autoplay.ytd-compact-autoplay-renderer {
-            color: var(--yt-spec-text-secondary);
-            font-size: 1.3rem;
-            font-weight: 500;
-            text-transform: uppercase;
-            line-height: 1;
-        }
-        
-        #toggle.ytd-compact-autoplay-renderer {
-            margin-left: 8px;
-        }
-        
-        ytd-watch-next-secondary-results-renderer ytd-compact-video-renderer.ytd-item-section-renderer:first-of-type {
-            margin-top: 0 !important;
-        }
-        </style>
+    ytd-compact-autoplay-renderer {
+        padding-bottom: 8px;
+        border-bottom: 1px solid var(--yt-spec-10-percent-layer);
+        margin-bottom: 16px;
+    }
+
+    ytd-compact-autoplay-renderer ytd-compact-video-renderer {
+        margin: 0 !important;
+        padding-bottom: 8px;
+    }
+
+    #head.ytd-compact-autoplay-renderer {
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+    }
+
+    #upnext.ytd-compact-autoplay-renderer {
+        color: var(--yt-spec-text-primary);
+        font-size: 1.6rem;
+        flex-grow: 1;
+    }
+
+    #autoplay.ytd-compact-autoplay-renderer {
+        color: var(--yt-spec-text-secondary);
+        font-size: 1.3rem;
+        font-weight: 500;
+        text-transform: uppercase;
+        line-height: 1;
+    }
+
+    #toggle.ytd-compact-autoplay-renderer {
+        margin-left: 8px;
+    }
+
+    ytd-watch-next-secondary-results-renderer #contents > .ytd-item-section-renderer:first-child {
+        margin-top: 0 !important;
+    }
+    </style>
     `);
     document.removeEventListener("DOMContentLoaded", tmp);
 });
