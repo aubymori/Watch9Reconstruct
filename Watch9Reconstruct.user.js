@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Watch9 Reconstruct
-// @version      2.0.1
+// @version      2.1.0
 // @description  Restores the old watch layout from before 2019
 // @author       Aubrey P.
 // @icon         https://www.youtube.com/favicon.ico
@@ -12,12 +12,12 @@
 // ==/UserScript==
 
 const w9rOptions = {
-    oldAutoplay: true,
-    removeBloatButtons: true
+    oldAutoplay: true,        // Classic autoplay renderer with "Up next" text
+    removeBloatButtons: true  // Removes "Clip", "Thanks", "Download", etc.
 }
 
 /**
- * Internationalization strings.
+ * Localization strings.
  */
  const w9ri18n = {
     en: {
@@ -32,31 +32,42 @@ const w9rOptions = {
 };
 
 /**
- * Stub for autoplay renderer.
- * (CURRENTLY UNUSED)
+ * Wait for a selector to exist
+ * 
+ * @param {string}       selector  CSS Selector
+ * @param {HTMLElement}  base      Element to search inside
+ * @returns {Node}
  */
-const autoplayStub = `
-<ytd-compact-autoplay-renderer class="style-scope ytd-watch-next-secondary-results-renderer">
-    <div id="head" class="style-scope ytd-compact-autoplay-renderer">
-        <div id="upnext" class="style-scope ytd-compact-autoplay-renderer"></div>
-        <div id="autoplay" class="style-scope ytd-compact-autoplay-renderer"></div>
-        <tp-yt-paper-toggle-button id="toggle" noink="" class="style-scope ytd-compact-autoplay-renderer" role="button" aria-pressed="" tabindex="0" style="touch-action: pan-y;" toggles="" aria-disabled="false" aria-label=""></tp-yt-paper-toggle-button>
-        <tp-yt-paper-tooltip id="tooltip for="toggle" class="style-scope ytd-compact-autoplay-renderer" role="tooltip" tabindex="-1"></tp-yt-paper-tooltip>
-    </div>
-    <div id="contents" class="style-scope ytd-compact-autoplay-renderer"></div>
-</ytd-compact-autoplay-renderer>
-`;
+async function waitForElm(selector, base = document) {
+    if (!selector) return null;
+    if (!base.querySelector) return null;
+    while (base.querySelector(selector) == null) {
+        await new Promise(r => requestAnimationFrame(r));
+    };
+    return base.querySelector(selector);
+};
 
 /**
- * Get a string from the internationalization strings.
+ * Get a string from the localization strings.
  *
  * @param {string} string  Name of string to get
  * @param {string} hl      Language to use.
  * @returns {string}
  */
 function getString(string, hl = "en") {
-    if (string == null) return "ERROR";
-    return w9ri18n[hl][string];
+    if (!string) return "ERROR";
+    if (w9ri18n[hl]) {
+        if (w9ri18n[hl][string]) {
+            return w9ri18n[hl][string];
+        } else if (w9r18n.en[string]) {
+            return w9ri18n.en[string];
+        } else {
+            return "ERROR";
+        }
+    } else {
+        if (w9ri18n.en[string]) return w9ri18n.en[string];
+        return "ERROR";
+    }
 }
 
 /**
@@ -64,7 +75,7 @@ function getString(string, hl = "en") {
  *
  * @param {string} dateStr  dateText from InnerTube ("Sep 13, 2022", "Premiered 2 hours ago", etc.)
  * @param {string} hl       Language to use.
- * @returns
+ * @returns {string}
  */
 function formatUploadDate(dateStr, hl = "en") {
     var nonPublishMatch = getString("nonPublishMatch", hl);
@@ -81,13 +92,64 @@ function formatUploadDate(dateStr, hl = "en") {
  *
  * @param {string} count  Subscriber count string from InnerTube ("374K subscribers", "No subscribers", etc.)
  * @param {string} hl     Language to use.
- * @returns
+ * @returns {string}
  */
 function formatSubCount(count, hl = "en") {
     if (count == null) return "";
     var tmp = count.replace(getString("subSuffixMatch", hl), "");
     tmp = tmp.replace(getString("subCntZero", hl), "0");
     return tmp;
+}
+
+/**
+ * Parse document.cookie
+ * 
+ * @returns {object}
+ */
+function parseCookies() {
+    var c = document.cookie.split(";"), o = {};
+    for (var i = 0, j = c.length; i < j; i++) {
+        var s = c[i].split("=");
+        var n = s[0].replace(" ", "");
+        s.splice(0, 1);
+        s = s.join("=");
+        o[n] = s;
+    }
+    return o;
+}
+
+/**
+ * Parse YouTube's PREF cookie.
+ * 
+ * @param {string} pref  PREF cookie content
+ * @returns {object}
+ */
+function parsePref(pref) {
+    var a = pref.split("&"), o = {};
+    for (var i = 0, j = a.length; i < j; i++) {
+        var b = a[i].split("=");
+        o[b[0]] = b[1];
+    }
+    return o;
+}
+
+/**
+ * Is autoplay enabled?
+ * 
+ * @returns {boolean}
+ */
+function autoplayState() {
+    var cookies = parseCookies();
+    if (cookies.PREF) {
+        var pref = parsePref(cookies.PREF);
+        if (pref.f5) {
+            return !(pref.f5 & 8192)
+        } else {
+            return true; // default
+        }
+    } else {
+        return true;
+    }
 }
 
 /**
@@ -127,6 +189,11 @@ function shouldHaveAutoplay() {
     }
 }
 
+/**
+ * Remove bloaty action buttons.
+ * 
+ * @returns {void}
+ */
 function removeBloatButtons() {
     var watchFlexy = document.querySelector("ytd-watch-flexy");
     var primaryInfo = watchFlexy.querySelector("ytd-video-primary-info-renderer");
@@ -142,7 +209,6 @@ function removeBloatButtons() {
     for (var i = 0; i < abList.length; i++) {
         var iconType;
         if (iconType = abList[i].data.icon.iconType) {
-            console.log(iconType);
             if (iconType == "MONEY_HEART" || iconType == "CONTENT_CUT") {
                 abList[i].remove();
             }
@@ -151,9 +217,61 @@ function removeBloatButtons() {
 }
 
 /**
+ * Build the classic compact autoplay renderer.
+ * 
+ * @returns {void}
+ */
+function buildAutoplay() {
+    const watchFlexy = document.querySelector("ytd-watch-flexy");
+    const secondaryResults = watchFlexy.querySelector("ytd-watch-next-secondary-results-renderer");
+    const sidebarItems = secondaryResults.querySelector("#items");
+    const language = yt.config_.HL ?? "en";
+    const autoplayStub = `
+    <ytd-compact-autoplay-renderer class="style-scope ytd-watch-next-secondary-results-renderer">
+        <div id="head" class="style-scope ytd-compact-autoplay-renderer">
+            <div id="upnext" class="style-scope ytd-compact-autoplay-renderer"></div>
+            <div id="autoplay" class="style-scope ytd-compact-autoplay-renderer"></div>
+            <tp-yt-paper-toggle-button id="toggle" noink="" class="style-scope ytd-compact-autoplay-renderer" role="button" aria-pressed="" tabindex="0" style="touch-action: pan-y;" toggles="" aria-disabled="false" aria-label=""></tp-yt-paper-toggle-button>
+            <tp-yt-paper-tooltip id="tooltip" for="toggle" class="style-scope ytd-compact-autoplay-renderer" role="tooltip" tabindex="-1">${getString("autoplayTip", language)}</tp-yt-paper-tooltip>
+        </div>
+        <div id="contents" class="style-scope ytd-compact-autoplay-renderer"></div>
+    </ytd-compact-autoplay-renderer>
+    `;
+
+    // Insert the autoplay stub.
+    sidebarItems.insertAdjacentHTML("afterbegin", autoplayStub);
+    var autoplayRenderer = sidebarItems.querySelector("ytd-compact-autoplay-renderer");
+
+    // Apply the appropriate localized text.
+    autoplayRenderer.querySelector("#upnext").innerText = getString("upNext", language);
+    autoplayRenderer.querySelector("#autoplay").innerText = getString("autoplay", language);
+
+    // Add event listener to toggle
+    autoplayRenderer.querySelector("#toggle").addEventListener("click", clickAutoplay);
+
+    // And finally, place the first video in the autoplay renderer.
+    // Recommended list loading is kinda delayed,
+    // so we wait for the first video renderer
+    waitForElm("ytd-compact-video-renderer", sidebarItems).then((e) => {
+        autoplayRenderer.querySelector("#contents").appendChild(e);
+    });
+
+    // Add the interval to update toggle if it isn't already.
+    if (!watchFlexy.getAttribute("autoplay-interval-active")) {
+        var autoplayInterval = setInterval(() => {
+            if (autoplayState()) {
+                autoplayRenderer.querySelector("#toggle").setAttribute("checked", "");
+            } else {
+                autoplayRenderer.querySelector("#toggle").removeAttribute("checked");
+            }
+        }, 100);
+    }
+}
+
+/**
  * Build new Watch9 elements and tweak currently existing elements accordingly.
  *
- * @return {void}
+ * @returns {void}
  */
  function buildWatch9() {
     const watchFlexy = document.querySelector("ytd-watch-flexy");
@@ -162,7 +280,7 @@ function removeBloatButtons() {
     const viewCount = primaryInfo.querySelector("ytd-video-view-count-renderer");
     const subBtn = secondaryInfo.querySelector("#subscribe-button tp-yt-paper-button");
     const uploadDate = secondaryInfo.querySelector(".date.ytd-video-secondary-info-renderer"); // Old unused element that we inject the date into
-    const language = yt.config_.HL;
+    const language = yt.config_.HL ?? "en";
 
     // Let script know we've done this initial build
     watchFlexy.setAttribute("watch9-built", "");
@@ -185,12 +303,15 @@ function removeBloatButtons() {
 
     // Bloat buttons
     if (w9rOptions.removeBloatButtons) removeBloatButtons();
+
+    // Autoplay
+    if (w9rOptions.oldAutoplay && shouldHaveAutoplay()) buildAutoplay();
 }
 
 /**
  * Update currently existing Watch9 elements.
  *
- * @return {void}
+ * @returns {void}
  */
 function updateWatch9() {
     const watchFlexy = document.querySelector("ytd-watch-flexy");
@@ -198,7 +319,7 @@ function updateWatch9() {
     const secondaryInfo = watchFlexy.querySelector("ytd-video-secondary-info-renderer");
     const subCnt = secondaryInfo.querySelector("yt-formatted-string.deemphasize");
     const uploadDate = secondaryInfo.querySelector(".date.ytd-video-secondary-info-renderer");
-    const language = yt.config_.HL;
+    const language = yt.config_.HL ?? "en";
 
     // Publish date
     var newUploadDate = formatUploadDate(primaryInfo.data.dateText.simpleText, language);
@@ -212,6 +333,9 @@ function updateWatch9() {
 
     // Bloat buttons
     if (w9rOptions.removeBloatButtons) removeBloatButtons();
+
+    // Autoplay
+    if (w9rOptions.oldAutoplay && shouldHaveAutoplay()) buildAutoplay();
 }
 
 /**
@@ -232,7 +356,7 @@ document.addEventListener("yt-page-data-updated", (e) => {
  */
 document.addEventListener("DOMContentLoaded", function tmp() {
     document.head.insertAdjacentHTML("beforeend", `
-    <style>
+    <style id="watch9-fix">
     /* Hide Watch11 */
     ytd-watch-metadata {
         display: none !important;
@@ -266,6 +390,52 @@ document.addEventListener("DOMContentLoaded", function tmp() {
         display: none !important;
     }
     </style>
+    `);
+    if (w9rOptions.oldAutoplay) document.head.insertAdjacentHTML("beforeend", `
+        <style id="compact-autoplay-fix">
+        yt-related-chip-cloud-renderer {
+            display: none;
+        }
+
+        ytd-compact-autoplay-renderer {
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--yt-spec-10-percent-layer);
+            margin-bottom: 16px;
+        }
+        
+        ytd-compact-autoplay-renderer ytd-compact-video-renderer {
+            margin: 0 !important;
+            padding-bottom: 8px;
+        }
+        
+        #head.ytd-compact-autoplay-renderer {
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+        }
+        
+        #upnext.ytd-compact-autoplay-renderer {
+            color: var(--yt-spec-text-primary);
+            font-size: 1.6rem;
+            flex-grow: 1;
+        }
+        
+        #autoplay.ytd-compact-autoplay-renderer {
+            color: var(--yt-spec-text-secondary);
+            font-size: 1.3rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            line-height: 1;
+        }
+        
+        #toggle.ytd-compact-autoplay-renderer {
+            margin-left: 8px;
+        }
+        
+        ytd-watch-next-secondary-results-renderer ytd-compact-video-renderer.ytd-item-section-renderer:first-of-type {
+            margin-top: 0 !important;
+        }
+        </style>
     `);
     document.removeEventListener("DOMContentLoaded", tmp);
 });
