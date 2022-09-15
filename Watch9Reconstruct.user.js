@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Watch9 Reconstruct
-// @version      2.1.1
+// @version      2.1.2
 // @description  Restores the old watch layout from before 2019
 // @author       Aubrey P.
 // @icon         https://www.youtube.com/favicon.ico
@@ -222,6 +222,9 @@ function removeBloatButtons() {
  * @returns {void}
  */
 function buildAutoplay() {
+    // Prevent it from building autoplay twice
+    if (document.querySelector("ytd-compact-autoplay-renderer") != null) return;
+
     const watchFlexy = document.querySelector("ytd-watch-flexy");
     const secondaryResults = watchFlexy.querySelector("ytd-watch-next-secondary-results-renderer");
     const sidebarItems = secondaryResults.querySelector("#items");
