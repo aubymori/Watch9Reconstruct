@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Watch9 Reconstruct
-// @version      2.4.2
+// @version      2.4.3
 // @description  Restores the old watch layout from before 2019
 // @author       Aubrey P.
 // @icon         https://www.youtube.com/favicon.ico
@@ -247,30 +247,45 @@ function shouldHaveAutoplay() {
 }
 
 /**
+ * Is a value in an array?
+ * 
+ * @param {*}     needle    Value to search
+ * @param {Array} haystack  Array to search
+ * @returns {boolean}
+ */
+function inArray(needle, haystack) {
+    for (var i = 0; i < haystack.length; i++) {
+        if (needle == haystack[i]) return true;
+    }
+    return false;
+}
+
+/**
  * Remove bloaty action buttons.
  *
  * @returns {void}
  */
 function removeBloatButtons() {
-    var watchFlexy = document.querySelector("ytd-watch-flexy");
-    var primaryInfo = watchFlexy.querySelector("ytd-video-primary-info-renderer");
-    var actionBtns = primaryInfo.querySelector("ytd-menu-renderer.ytd-video-primary-info-renderer .top-level-buttons");
-    // I have no idea why they made this a seperate element
-    // type but go off I guess, Google
-    var dlBtn;
-    if (dlBtn = actionBtns.querySelector("ytd-download-button-renderer")) {
-        dlBtn.remove();
-    }
+    var primaryInfo = document.querySelector("ytd-video-primary-info-renderer");
+    var actionBtns = primaryInfo.data.videoActions.menuRenderer.topLevelButtons;
 
-    var abList = actionBtns.querySelectorAll("ytd-button-renderer");
-    for (var i = 0; i < abList.length; i++) {
-        var iconType;
-        if (iconType = abList[i].data.icon.iconType) {
-            if (iconType == "MONEY_HEART" || iconType == "CONTENT_CUT") {
-                abList[i].remove();
+    // Remove the action buttons accordingly.
+    for (var i = 0; i < actionBtns.length; i++) {
+        if (actionBtns[i].downloadButtonRenderer) {
+            actionBtns.splice(i, 1);
+            i--;
+        } else if (actionBtns[i].buttonRenderer) {
+            if (inArray(actionBtns[i].buttonRenderer.icon.iconType, ["MONEY_HEART", "CONTENT_CUT"])) {
+                actionBtns.splice(i, 1);
+                i--;
             }
         }
     }
+
+    // Refresh the primary info's data.
+    var tmp = primaryInfo.data;
+    primaryInfo.data = {};
+    primaryInfo.data = tmp;
 }
 
 /**
@@ -450,9 +465,8 @@ async function buildAutoplay() {
  * @returns {void}
  */
 function updateWatch9() {
-    const watchFlexy = document.querySelector("ytd-watch-flexy");
-    const primaryInfo = watchFlexy.querySelector("ytd-video-primary-info-renderer");
-    const secondaryInfo = watchFlexy.querySelector("ytd-video-secondary-info-renderer");
+    const primaryInfo = document.querySelector("ytd-video-primary-info-renderer");
+    const secondaryInfo = document.querySelector("ytd-video-secondary-info-renderer");
     const subCnt = secondaryInfo.querySelector("yt-formatted-string.deemphasize");
     const uploadDate = secondaryInfo.querySelector(".date.ytd-video-secondary-info-renderer");
     const language = yt.config_.HL.substring(0, 2) ?? "en";
