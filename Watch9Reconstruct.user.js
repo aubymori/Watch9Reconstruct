@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Watch9 Reconstruct
-// @version      2.2.0
+// @version      2.3.0
 // @description  Restores the old watch layout from before 2019
 // @author       Aubrey P.
 // @icon         https://www.youtube.com/favicon.ico
@@ -25,7 +25,6 @@ const w9rOptions = {
  const w9ri18n = {
     en: {
         subSuffixMatch: /( subscribers)|( subscriber)/,
-        subCntZero: "No",
         nonPublishMatch: /(Premier)|(Stream)|(Start)/,
         publishedOn: "Published on %s",
         uploadedOn: "Uploaded on %s",
@@ -35,7 +34,6 @@ const w9rOptions = {
     },
     ja: {
         subSuffixMatch: /(チャンネル登録者数 )|(人)/g,
-        subCntZero: "0",
         nonPublishMatch: /(公開済)|(開始済)/g,
         publishedOn: "%s に公開",
         uploadedOn: "%s にアップロード",
@@ -44,24 +42,49 @@ const w9rOptions = {
         autoplayTip: "自動再生を有効にすると、関連動画が自動的に再生されます。"
     },
     pl: {
-        subSuffixMatch: /( subskrybentów)|( subskrybent)/,
-        subCntZero: "No",
+        subSuffixMatch: /( subskrybentów)|( subskrybent)/,
         nonPublishMatch: /(Data premiery: )|(adawane na żywo )|(Transmisja zaczęła się )/,
-        publishedOn: "Published on %s",
-        uploadedOn: "Uploaded on %s",
-        upNext: "Up next",
-        autoplay: "Autoplay",
-        autoplayTip: "When autoplay is enabled, a suggested video will automatically play next."
+        publishedOn: "Przesłany %s",
+        uploadedOn: "Przesłany %s",
+        upNext: "Następny",
+        autoplay: "Autoodtwarzanie",
+        autoplayTip: "Jeśli masz włączone autoodtwarzanie, jako następny włączy się automatycznie proponowany film."
     },
     fil: {
         subSuffixMatch: /(na)|( subscribers)|( subscriber)|(\s)/g,
-        subCntZero: "0",
         nonPublishMatch: /(simula)/,
         publishedOn: "Na-publish noong %s",
         uploadedOn: "Na-upload noong %s",
         upNext: "Susunod",
         autoplay: "I-autoplay",
         autoplayTip: "Kapag naka-enable ang autoplay, awtomatikong susunod na magpe-play ang isang iminumungkahing video."
+    },
+    fr: {
+        subSuffixMatch: /( abonnés)|( abonné)|( d’abonnés)|( d’abonné)/g,
+        nonPublishMatch: /(Diffus)|(Sortie)/g,
+        publishedOn: "Publiée le %s",
+        uploadedOn: "Mise en ligne le %s",
+        upNext: "À suivre",
+        autoplay: "Lecture automatique",
+        autoplayTip: "Lorsque cette fonctionnalité est activée, une vidéo issue des suggestions est automatiquement lancée à la suite de la lecture en cours."
+    },
+    es: {
+        subSuffixMatch: /( de suscriptores)|( suscriptor)/g,
+        nonPublishMatch: /(directo)|(Fecha)/g,
+        publishedOn: "Publicado el %s",
+        uploadedOn: "Subido el %s",
+        upNext: "A continuación",
+        autoplay: "Reproducción automática",
+        autoplayTip: "Si la reproducción automática está habilitada, se reproducirá automáticamente un vídeo a continuación."
+    },
+    pt: {
+        subSuffixMatch: /( de subscritores)|( subscritor)/g,
+        nonPublishMatch: /(Stream)|(Estreou)/g,
+        publishedOn: "Publicado a %s",
+        uploadedOn: "Carregado a %s",
+        upNext: "Próximo",
+        autoplay: "Reprodução automática",
+        autoplayTip: "Quando a reprodução automática é ativada, um vídeo sugerido será executado automaticamente em seguida."
     }
 };
 
@@ -93,7 +116,7 @@ function getString(string, hl = "en") {
     if (w9ri18n[hl]) {
         if (w9ri18n[hl][string]) {
             return w9ri18n[hl][string];
-        } else if (w9r18n.en[string]) {
+        } else if (w9ri18n.en[string]) {
             return w9ri18n.en[string];
         } else {
             return "ERROR";
@@ -132,7 +155,6 @@ function formatUploadDate(dateStr, isPublic, hl = "en") {
 function formatSubCount(count, hl = "en") {
     if (count == null) return "";
     var tmp = count.replace(getString("subSuffixMatch", hl), "");
-    tmp = tmp.replace(getString("subCntZero", hl), "0");
     return tmp;
 }
 
@@ -296,7 +318,7 @@ function buildAutoplay() {
             return secondaryResults.data.results;
         }
     })();
-    const language = yt.config_.HL ?? "en";
+    const language = yt.config_.HL.substring(0, 2) ?? "en";
     const autoplayStub = `
     <ytd-compact-autoplay-renderer class="style-scope ytd-watch-next-secondary-results-renderer">
         <div id="head" class="style-scope ytd-compact-autoplay-renderer">
@@ -362,7 +384,7 @@ function buildAutoplay() {
     const viewCount = primaryInfo.querySelector("ytd-video-view-count-renderer");
     const subBtn = secondaryInfo.querySelector("#subscribe-button tp-yt-paper-button");
     const uploadDate = secondaryInfo.querySelector(".date.ytd-video-secondary-info-renderer"); // Old unused element that we inject the date into
-    const language = yt.config_.HL ?? "en";
+    const language = yt.config_.HL.substring(0, 2) ?? "en";
 
     // Let script know we've done this initial build
     watchFlexy.setAttribute("watch9-built", "");
@@ -375,7 +397,12 @@ function buildAutoplay() {
     uploadDate.innerText = newUploadDate;
 
     // Sub count
-    var newSubCount = formatSubCount(secondaryInfo.data.owner.videoOwnerRenderer.subscriberCountText.simpleText, language);
+    var newSubCount;
+    if (secondaryInfo.data.owner.videoOwnerRenderer.subscriberCountText) {
+        newSubCount = formatSubCount(secondaryInfo.data.owner.videoOwnerRenderer.subscriberCountText.simpleText, language);
+    } else {
+        newSubCount = "0";
+    }
     var w9rSubCount = document.createElement("yt-formatted-string");
     w9rSubCount.classList.add("style-scope", "deemphasize");
     w9rSubCount.text = {
@@ -401,7 +428,7 @@ function updateWatch9() {
     const secondaryInfo = watchFlexy.querySelector("ytd-video-secondary-info-renderer");
     const subCnt = secondaryInfo.querySelector("yt-formatted-string.deemphasize");
     const uploadDate = secondaryInfo.querySelector(".date.ytd-video-secondary-info-renderer");
-    const language = yt.config_.HL ?? "en";
+    const language = yt.config_.HL.substring(0, 2) ?? "en";
 
     // Publish date
     var newUploadDate = formatUploadDate(primaryInfo.data.dateText.simpleText, isVideoPublic(), language);
@@ -424,6 +451,10 @@ function updateWatch9() {
  * Run the Watch9 build/update functions.
  */
 document.addEventListener("yt-page-data-updated", (e) => {
+    if (document.querySelector("ytd-compact-autoplay-renderer")) {
+        document.querySelector("ytd-compact-autoplay-renderer").remove();
+    }
+
     if (e.detail.pageType == "watch") {
         if (document.querySelector("ytd-watch-flexy").getAttribute("watch9-built") != null) {
             updateWatch9();
