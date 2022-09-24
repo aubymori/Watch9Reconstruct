@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Watch9 Reconstruct
-// @version      2.3.0
+// @version      2.4.0
 // @description  Restores the old watch layout from before 2019
 // @author       Aubrey P.
 // @icon         https://www.youtube.com/favicon.ico
@@ -293,49 +293,64 @@ function isVideoPublic() {
 }
 
 /**
+ * Get sidebar data.
+ * 
+ * @returns {object}
+ */
+async function getSidebarData() {
+    const secondaryResults = document.querySelector("ytd-watch-next-secondary-results-renderer");
+    const resultData = secondaryResults.data.results;
+    var response = {};
+
+    if (yt.config_.LOGGED_IN == false) {
+        response.element = await waitForElm("#items.ytd-watch-next-secondary-results-renderer");
+        response.data = resultData;
+        response.class = "ytd-watch-next-secondary-results-renderer";
+        return response;
+    } else {
+        var tmp;
+        if (tmp = resultData[0].relatedChipCloudRenderer) {
+            response.element = await waitForElm("#contents.ytd-item-section-renderer", secondaryResults);
+            response.data = resultData[1].itemSectionRenderer.contents;
+            response.class = "ytd-item-section-renderer";
+            return response;
+        } else {
+            response.element = await waitForElm("#items.ytd-watch-next-secondary-results-renderer");
+            response.data = resultData;
+            response.class = "ytd-watch-next-secondary-results-renderer";
+            return response;
+        }
+    }
+}
+
+/**
  * Build the classic compact autoplay renderer.
  *
  * @returns {void}
  */
-function buildAutoplay() {
+async function buildAutoplay() {
     // Prevent it from building autoplay twice
     if (document.querySelector("ytd-compact-autoplay-renderer") != null) return;
 
     const watchFlexy = document.querySelector("ytd-watch-flexy");
-    const secondaryResults = watchFlexy.querySelector("ytd-watch-next-secondary-results-renderer");
-    const sidebarItems = (() => {
-        var a;
-        if (a = secondaryResults.querySelector("#contents.ytd-item-section-renderer")) {
-            return a;
-        } else {
-            return secondaryResults.querySelector("#items.ytd-watch-next-secondary-results-renderer");
-        }
-    })();
-    const sidebarItemData = (() => {
-        if (secondaryResults.data.results[0].relatedChipCloudRenderer) {
-            return secondaryResults.data.results[1].itemSectionRenderer.contents;
-        } else {
-            return secondaryResults.data.results;
-        }
-    })();
+    const sidebarItems = await getSidebarData();
     const language = yt.config_.HL.substring(0, 2) ?? "en";
     const autoplayStub = `
-    <ytd-compact-autoplay-renderer class="style-scope ytd-watch-next-secondary-results-renderer">
+    <ytd-compact-autoplay-renderer class="style-scope ${ sidebarItems.class }">
         <div id="head" class="style-scope ytd-compact-autoplay-renderer">
             <div id="upnext" class="style-scope ytd-compact-autoplay-renderer"></div>
             <div id="autoplay" class="style-scope ytd-compact-autoplay-renderer"></div>
             <tp-yt-paper-toggle-button id="toggle" noink="" class="style-scope ytd-compact-autoplay-renderer" role="button" aria-pressed="" tabindex="0" style="touch-action: pan-y;" toggles="" aria-disabled="false" aria-label=""></tp-yt-paper-toggle-button>
-            <tp-yt-paper-tooltip id="tooltip" for="toggle" class="style-scope ytd-compact-autoplay-renderer" role="tooltip" tabindex="-1">${getString("autoplayTip", language)}</tp-yt-paper-tooltip>
+            <tp-yt-paper-tooltip id="tooltip" for="toggle" class="style-scope ytd-compact-autoplay-renderer" role="tooltip" tabindex="-1">${ getString("autoplayTip", language) }</tp-yt-paper-tooltip>
         </div>
         <div id="contents" class="style-scope ytd-compact-autoplay-renderer"></div>
     </ytd-compact-autoplay-renderer>
     `;
 
-    console.log(sidebarItemData);
 
     // Insert the autoplay stub.
-    sidebarItems.insertAdjacentHTML("afterbegin", autoplayStub);
-    var autoplayRenderer = sidebarItems.querySelector("ytd-compact-autoplay-renderer");
+    sidebarItems.element.insertAdjacentHTML("afterbegin", autoplayStub);
+    var autoplayRenderer = sidebarItems.element.querySelector("ytd-compact-autoplay-renderer");
 
     // Apply the appropriate localized text.
     autoplayRenderer.querySelector("#upnext").innerText = getString("upNext", language);
@@ -346,9 +361,9 @@ function buildAutoplay() {
 
     // Copy first video from data into autoplay renderer
     var firstVideo;
-    for (var i = 0; i < sidebarItemData.length; i++) {
-        if (sidebarItemData[i].compactVideoRenderer) {
-            firstVideo = sidebarItemData[i];
+    for (var i = 0; i < sidebarItems.data.length; i++) {
+        if (sidebarItems.data[i].compactVideoRenderer) {
+            firstVideo = sidebarItems.data[i];
             break;
         }
     }
@@ -451,10 +466,6 @@ function updateWatch9() {
  * Run the Watch9 build/update functions.
  */
 document.addEventListener("yt-page-data-updated", (e) => {
-    if (document.querySelector("ytd-compact-autoplay-renderer")) {
-        document.querySelector("ytd-compact-autoplay-renderer").remove();
-    }
-
     if (e.detail.pageType == "watch") {
         if (document.querySelector("ytd-watch-flexy").getAttribute("watch9-built") != null) {
             updateWatch9();
@@ -514,6 +525,8 @@ document.addEventListener("DOMContentLoaded", function tmp() {
         padding-bottom: 8px;
         border-bottom: 1px solid var(--yt-spec-10-percent-layer);
         margin-bottom: 16px;
+        display: flex;
+        flex-direction: column;
     }
 
     ytd-compact-autoplay-renderer ytd-compact-video-renderer {
@@ -545,7 +558,7 @@ document.addEventListener("DOMContentLoaded", function tmp() {
         margin-left: 8px;
     }
 
-    ytd-watch-next-secondary-results-renderer #contents.ytd-item-section-renderer > * {
+    ytd-watch-next-secondary-results-renderer #contents.ytd-item-section-renderer > :not(ytd-compact-autoplay-renderer) {
         margin-top: 0 !important;
         margin-bottom: var(--ytd-item-section-item-margin,16px);
     }
