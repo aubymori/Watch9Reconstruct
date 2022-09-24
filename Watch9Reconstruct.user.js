@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Watch9 Reconstruct
-// @version      2.4.1
+// @version      2.4.2
 // @description  Restores the old watch layout from before 2019
 // @author       Aubrey P.
 // @icon         https://www.youtube.com/favicon.ico
@@ -368,6 +368,18 @@ async function buildAutoplay() {
         }
     }
 
+    // Delete first video from regular list
+    var m = new MutationObserver(() => {
+        sec = sidebarItems.element.children;
+        for (var i = 0; i < sec.length; i++) {
+            if (sec[i].tagName == "YTD-COMPACT-VIDEO-RENDERER" && sec[i].data.videoId == firstVideo.compactVideoRenderer.videoId) {
+                sec[i].remove();
+                m.disconnect();
+            }
+        }
+    });
+    m.observe(sidebarItems.element, {childList: true, subtree: true});
+
     var videoRenderer = document.createElement("ytd-compact-video-renderer");
     videoRenderer.data = firstVideo.compactVideoRenderer;
     videoRenderer.classList.add("style-scope", "ytd-compact-autoplay-renderer")
@@ -377,7 +389,7 @@ async function buildAutoplay() {
 
     // Add the interval to update toggle if it isn't already.
     if (!watchFlexy.getAttribute("autoplay-interval-active")) {
-        var autoplayInterval = setInterval(() => {
+        setInterval(() => {
             if (autoplayState()) {
                 autoplayRenderer.querySelector("#toggle").setAttribute("checked", "");
             } else {
@@ -561,21 +573,6 @@ document.addEventListener("DOMContentLoaded", function tmp() {
     ytd-watch-next-secondary-results-renderer #contents.ytd-item-section-renderer > :not(ytd-compact-autoplay-renderer) {
         margin-top: 0 !important;
         margin-bottom: var(--ytd-item-section-item-margin,16px);
-    }
-
-    ytd-watch-next-secondary-results-renderer #contents.ytd-item-section-renderer > ytd-compact-video-renderer:first-of-type {
-        display: none !important;
-    }
-
-    ytd-watch-next-secondary-results-renderer #contents.ytd-item-section-renderer,
-    #items.ytd-watch-next-secondary-results-renderer {
-        display: flex;
-        flex-direction: column;
-    }
-
-    ytd-watch-next-secondary-results-renderer #contents.ytd-item-section-renderer > ytd-continuation-item-renderer,
-    #items.ytd-watch-next-secondary-results-renderer > ytd-continuation-item-renderer {
-        order: 2;
     }
     </style>
     `);
