@@ -1,5 +1,5 @@
 ## ⚠ ONLY WORKS IN ENGLISH! ⚠
-## ⚠ PLEASE HELP TRANSLATE IF YOU CAN! ⚠
+## ⚠ PLEASE SEE [LOCALIZATION.MD](LOCALIZATION.md) ⚠
 
 # Watch9 Reconstruct
 Introduced in 2017, Watch9 was the Watch page's layout up until 2019. This userscript aims to restore that layout.

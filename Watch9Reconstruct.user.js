@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Watch9 Reconstruct
-// @version      2.1.2
+// @version      2.2.0
 // @description  Restores the old watch layout from before 2019
 // @author       Aubrey P.
 // @icon         https://www.youtube.com/favicon.ico
@@ -18,16 +18,49 @@ const w9rOptions = {
 
 /**
  * Localization strings.
+ * 
+ * See LOCALIZATION.md in the GitHub repo.
  */
  const w9ri18n = {
     en: {
-        subSuffixMatch: /( subscribers)|( subscriber)/, // Regex for isolating subscriber count
-        subCntZero: "No",                               // When the author has 0 subscribers
-        nonPublishMatch: /(Premier)|(Stream)|(Start)/,  // Match to determine if a video was normally uploaded
-        publishedOn: "Published on %s",                 // Self explanatory
+        subSuffixMatch: /( subscribers)|( subscriber)/,
+        subCntZero: "No",
+        nonPublishMatch: /(Premier)|(Stream)|(Start)/,
+        publishedOn: "Published on %s",
+        uploadedOn: "Uploaded on %s",
         upNext: "Up next",
         autoplay: "Autoplay",
         autoplayTip: "When autoplay is enabled, a suggested video will automatically play next."
+    },
+    ja: {
+        subSuffixMatch: /(チャンネル登録者数 )|(人)/g,
+        subCntZero: "0",
+        nonPublishMatch: /(公開済)|(開始済)/g,
+        publishedOn: "%s に公開",
+        uploadedOn: "%s にアップロード",
+        upNext: "自動再生",
+        autoplay: "次の動画",
+        autoplayTip: "自動再生を有効にすると、関連動画が自動的に再生されます。"
+    },
+    pl: {
+        subSuffixMatch: /( subskrybentów)|( subskrybent)/,
+        subCntZero: "No",
+        nonPublishMatch: /(Data premiery: )|(adawane na żywo )|(Transmisja zaczęła się )/,
+        publishedOn: "Published on %s",
+        uploadedOn: "Uploaded on %s",
+        upNext: "Up next",
+        autoplay: "Autoplay",
+        autoplayTip: "When autoplay is enabled, a suggested video will automatically play next."
+    },
+    fil: {
+        subSuffixMatch: /(na)|( subscribers)|( subscriber)|(\s)/g,
+        subCntZero: "0",
+        nonPublishMatch: /(simula)/,
+        publishedOn: "Na-publish noong %s",
+        uploadedOn: "Na-upload noong %s",
+        upNext: "Susunod",
+        autoplay: "I-autoplay",
+        autoplayTip: "Kapag naka-enable ang autoplay, awtomatikong susunod na magpe-play ang isang iminumungkahing video."
     }
 };
 
@@ -71,19 +104,20 @@ function getString(string, hl = "en") {
 }
 
 /**
- * Format upload date string to include "Published on" if applicable.
+ * Format upload date string to include "Published on" or "Uploaded on" if applicable.
  *
- * @param {string} dateStr  dateText from InnerTube ("Sep 13, 2022", "Premiered 2 hours ago", etc.)
- * @param {string} hl       Language to use.
+ * @param {string}  dateStr  dateText from InnerTube ("Sep 13, 2022", "Premiered 2 hours ago", etc.)
+ * @param {boolean} isPublic Is the video public?
+ * @param {string}  hl       Language to use.
  * @returns {string}
  */
-function formatUploadDate(dateStr, hl = "en") {
+function formatUploadDate(dateStr, isPublic, hl = "en") {
     var nonPublishMatch = getString("nonPublishMatch", hl);
-    var publishedOn = getString("publishedOn", hl);
+    var string = isPublic ? getString("publishedOn", hl) : getString("uploadedOn", hl);
     if (nonPublishMatch.test(dateStr)) {
         return dateStr;
     } else {
-        return publishedOn.replace("%s", dateStr);
+        return string.replace("%s", dateStr);
     }
 }
 
@@ -217,6 +251,25 @@ function removeBloatButtons() {
 }
 
 /**
+ * Is the current video public? Or is it unlisted/private?
+ * 
+ * @returns {boolean}
+ */
+function isVideoPublic() {
+    const primaryInfo = document.querySelector("ytd-video-primary-info-renderer");
+    if (primaryInfo.data.badges == null) return true;
+    const badges = primaryInfo.data.badges;
+
+    for (var i = 0; i < badges.length; i++) {
+        var iconType = badges[i].metadataBadgeRenderer.icon.iconType;
+        if (iconType == "PRIVACY_UNLISTED" || iconType == "PRIVACY_PRIVATE") {
+            return false;
+        }
+    }
+    return true;
+}
+
+/**
  * Build the classic compact autoplay renderer.
  *
  * @returns {void}
@@ -227,7 +280,21 @@ function buildAutoplay() {
 
     const watchFlexy = document.querySelector("ytd-watch-flexy");
     const secondaryResults = watchFlexy.querySelector("ytd-watch-next-secondary-results-renderer");
-    const sidebarItems = secondaryResults.querySelector("#items");
+    const sidebarItems = (() => {
+        var a;
+        if (a = secondaryResults.querySelector("#contents.ytd-item-section-renderer")) {
+            return a;
+        } else {
+            return secondaryResults.querySelector("#items.ytd-watch-next-secondary-results-renderer");
+        }
+    })();
+    const sidebarItemData = (() => {
+        if (secondaryResults.data.results[0].relatedChipCloudRenderer) {
+            return secondaryResults.data.results[1].itemSectionRenderer.contents;
+        } else {
+            return secondaryResults.data.results;
+        }
+    })();
     const language = yt.config_.HL ?? "en";
     const autoplayStub = `
     <ytd-compact-autoplay-renderer class="style-scope ytd-watch-next-secondary-results-renderer">
@@ -241,6 +308,8 @@ function buildAutoplay() {
     </ytd-compact-autoplay-renderer>
     `;
 
+    console.log(sidebarItemData);
+
     // Insert the autoplay stub.
     sidebarItems.insertAdjacentHTML("afterbegin", autoplayStub);
     var autoplayRenderer = sidebarItems.querySelector("ytd-compact-autoplay-renderer");
@@ -252,12 +321,21 @@ function buildAutoplay() {
     // Add event listener to toggle
     autoplayRenderer.querySelector("#toggle").addEventListener("click", clickAutoplay);
 
-    // And finally, place the first video in the autoplay renderer.
-    // Recommended list loading is kinda delayed,
-    // so we wait for the first video renderer
-    waitForElm("ytd-compact-video-renderer", sidebarItems).then((e) => {
-        autoplayRenderer.querySelector("#contents").appendChild(e);
-    });
+    // Copy first video from data into autoplay renderer
+    var firstVideo;
+    for (var i = 0; i < sidebarItemData.length; i++) {
+        if (sidebarItemData[i].compactVideoRenderer) {
+            firstVideo = sidebarItemData[i];
+            break;
+        }
+    }
+
+    var videoRenderer = document.createElement("ytd-compact-video-renderer");
+    videoRenderer.data = firstVideo.compactVideoRenderer;
+    videoRenderer.classList.add("style-scope", "ytd-compact-autoplay-renderer")
+    videoRenderer.setAttribute("lockup", "true");
+    videoRenderer.setAttribute("thumbnail-width", "168");
+    autoplayRenderer.querySelector("#contents").appendChild(videoRenderer);
 
     // Add the interval to update toggle if it isn't already.
     if (!watchFlexy.getAttribute("autoplay-interval-active")) {
@@ -292,11 +370,11 @@ function buildAutoplay() {
     viewCount.removeAttribute("small");
 
     // Publish date
-    var newUploadDate = formatUploadDate(primaryInfo.data.dateText.simpleText, language);
+    var newUploadDate = formatUploadDate(primaryInfo.data.dateText.simpleText, isVideoPublic(), language);
     uploadDate.innerText = newUploadDate;
 
     // Sub count
-    var newSubCount = formatSubCount(secondaryInfo.data.owner.videoOwnerRenderer.subscriberCountText.simpleText);
+    var newSubCount = formatSubCount(secondaryInfo.data.owner.videoOwnerRenderer.subscriberCountText.simpleText, language);
     var w9rSubCount = document.createElement("yt-formatted-string");
     w9rSubCount.classList.add("style-scope", "deemphasize");
     w9rSubCount.text = {
@@ -325,7 +403,7 @@ function updateWatch9() {
     const language = yt.config_.HL ?? "en";
 
     // Publish date
-    var newUploadDate = formatUploadDate(primaryInfo.data.dateText.simpleText, language);
+    var newUploadDate = formatUploadDate(primaryInfo.data.dateText.simpleText, isVideoPublic(), language);
     uploadDate.innerText = newUploadDate;
 
     // Sub count
@@ -435,8 +513,13 @@ document.addEventListener("DOMContentLoaded", function tmp() {
         margin-left: 8px;
     }
 
-    ytd-watch-next-secondary-results-renderer #contents > .ytd-item-section-renderer:first-child {
+    ytd-watch-next-secondary-results-renderer #contents.ytd-item-section-renderer > * {
         margin-top: 0 !important;
+        margin-bottom: var(--ytd-item-section-item-margin,16px);
+    }
+
+    ytd-watch-next-secondary-results-renderer #contents.ytd-item-section-renderer > ytd-compact-video-renderer:first-of-type {
+        display: none !important;
     }
     </style>
     `);
