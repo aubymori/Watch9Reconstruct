@@ -18,4 +18,4 @@ A: There's a constant variable at the start of the script which holds the option
 A: The layout that came before was known internally as Watch8, the one before as Watch7, the one before as Watch6, etc. etc. So it made the most logical sense to call this one Watch9.
 
 # Old versions
-You can find old versions on the [Greasy Fork page](https://greasyfork.org/en/scripts/447194-watch9-reconstruct), although it is HIGHLY RECOMMENDED that you DO NOT use these versions as there is a horrible bug which prevents it from working in any new tab.
+You can find old versions on the [Greasy Fork page](https://greasyfork.org/en/scripts/447194-watch9-reconstruct), although it is HIGHLY RECOMMENDED that you DO NOT use these versions as they are riddled with bugs.
