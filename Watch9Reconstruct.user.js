@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Watch9 Reconstruct
-// @version      2.4.0
+// @version      2.4.1
 // @description  Restores the old watch layout from before 2019
 // @author       Aubrey P.
 // @icon         https://www.youtube.com/favicon.ico
@@ -19,7 +19,7 @@ const w9rOptions = {
 
 /**
  * Localization strings.
- * 
+ *
  * See LOCALIZATION.md in the GitHub repo.
  */
  const w9ri18n = {
@@ -275,7 +275,7 @@ function removeBloatButtons() {
 
 /**
  * Is the current video public? Or is it unlisted/private?
- * 
+ *
  * @returns {boolean}
  */
 function isVideoPublic() {
@@ -294,7 +294,7 @@ function isVideoPublic() {
 
 /**
  * Get sidebar data.
- * 
+ *
  * @returns {object}
  */
 async function getSidebarData() {
@@ -565,6 +565,17 @@ document.addEventListener("DOMContentLoaded", function tmp() {
 
     ytd-watch-next-secondary-results-renderer #contents.ytd-item-section-renderer > ytd-compact-video-renderer:first-of-type {
         display: none !important;
+    }
+
+    ytd-watch-next-secondary-results-renderer #contents.ytd-item-section-renderer,
+    #items.ytd-watch-next-secondary-results-renderer {
+        display: flex;
+        flex-direction: column;
+    }
+
+    ytd-watch-next-secondary-results-renderer #contents.ytd-item-section-renderer > ytd-continuation-item-renderer,
+    #items.ytd-watch-next-secondary-results-renderer > ytd-continuation-item-renderer {
+        order: 2;
     }
     </style>
     `);
