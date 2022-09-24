@@ -4,6 +4,7 @@
 // @description  Restores the old watch layout from before 2019
 // @author       Aubrey P.
 // @icon         https://www.youtube.com/favicon.ico
+// @updateURL    https://github.com/aubymori/Watch9Reconstruct/raw/main/Watch9Reconstruct.user.js
 // @namespace    aubymori
 // @license      Unlicense
 // @match        www.youtube.com/*
