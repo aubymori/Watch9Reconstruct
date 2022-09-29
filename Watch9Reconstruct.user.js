@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Watch9 Reconstruct
-// @version      2.4.3
+// @version      2.5.0
 // @description  Restores the old watch layout from before 2019
 // @author       Aubrey P.
 // @icon         https://www.youtube.com/favicon.ico
@@ -42,7 +42,7 @@ const w9rOptions = {
         autoplayTip: "自動再生を有効にすると、関連動画が自動的に再生されます。"
     },
     pl: {
-        subSuffixMatch: /( subskrybentów)|( subskrybent)/,
+        subSuffixMatch: /( subskrybentów)|( subskrybent)/,
         nonPublishMatch: /(Data premiery: )|(adawane na żywo )|(Transmisja zaczęła się )/,
         publishedOn: "Przesłany %s",
         uploadedOn: "Przesłany %s",
@@ -85,6 +85,15 @@ const w9rOptions = {
         upNext: "Próximo",
         autoplay: "Reprodução automática",
         autoplayTip: "Quando a reprodução automática é ativada, um vídeo sugerido será executado automaticamente em seguida."
+    },
+    ru: {
+        subSuffixMatch: /( подписчиков)|( подписчик)/g,
+        nonPublishMatch: /(Сейчас смотрят:)|(Прямой эфир состоялся)|(Дата премьеры:)/g,
+        publishedOn: "Дата публикации: %s",
+        uploadedOn: "Дата публикации: %s",
+        upNext: "Следующее видео",
+        autoplay: "Автовоспроизведение",
+        autoplayTip: "Если функция включена, то следующий ролик начнет воспроизводиться автоматически."
     }
 };
 
@@ -349,14 +358,15 @@ async function buildAutoplay() {
 
     const watchFlexy = document.querySelector("ytd-watch-flexy");
     const sidebarItems = await getSidebarData();
-    const language = yt.config_.HL.substring(0, 2) ?? "en";
+    const language = yt.config_.HL.split("-")[0] ?? "en";
     const autoplayStub = `
     <ytd-compact-autoplay-renderer class="style-scope ${ sidebarItems.class }">
         <div id="head" class="style-scope ytd-compact-autoplay-renderer">
             <div id="upnext" class="style-scope ytd-compact-autoplay-renderer"></div>
             <div id="autoplay" class="style-scope ytd-compact-autoplay-renderer"></div>
-            <tp-yt-paper-toggle-button id="toggle" noink="" class="style-scope ytd-compact-autoplay-renderer" role="button" aria-pressed="" tabindex="0" style="touch-action: pan-y;" toggles="" aria-disabled="false" aria-label=""></tp-yt-paper-toggle-button>
-            <tp-yt-paper-tooltip id="tooltip" for="toggle" class="style-scope ytd-compact-autoplay-renderer" role="tooltip" tabindex="-1">${ getString("autoplayTip", language) }</tp-yt-paper-tooltip>
+            <tp-yt-paper-toggle-button id="toggle" noink="" class="style-scope ytd-compact-autoplay-renderer" role="button" aria-pressed="" tabindex="0" style="touch-action: pan-y;" toggles="" aria-disabled="false" aria-label="">
+                <tp-yt-paper-tooltip id="tooltip" class="style-scope ytd-compact-autoplay-renderer" role="tooltip" tabindex="-1">${ getString("autoplayTip", language) }</tp-yt-paper-tooltip>
+            </tp-yt-paper-toggle-button>
         </div>
         <div id="contents" class="style-scope ytd-compact-autoplay-renderer"></div>
     </ytd-compact-autoplay-renderer>
@@ -364,8 +374,8 @@ async function buildAutoplay() {
 
 
     // Insert the autoplay stub.
-    sidebarItems.element.insertAdjacentHTML("afterbegin", autoplayStub);
-    var autoplayRenderer = sidebarItems.element.querySelector("ytd-compact-autoplay-renderer");
+    sidebarItems.element.insertAdjacentHTML("beforebegin", autoplayStub);
+    var autoplayRenderer = sidebarItems.element.parentNode.querySelector("ytd-compact-autoplay-renderer");
 
     // Apply the appropriate localized text.
     autoplayRenderer.querySelector("#upnext").innerText = getString("upNext", language);
@@ -382,18 +392,6 @@ async function buildAutoplay() {
             break;
         }
     }
-
-    // Delete first video from regular list
-    var m = new MutationObserver(() => {
-        sec = sidebarItems.element.children;
-        for (var i = 0; i < sec.length; i++) {
-            if (sec[i].tagName == "YTD-COMPACT-VIDEO-RENDERER" && sec[i].data.videoId == firstVideo.compactVideoRenderer.videoId) {
-                sec[i].remove();
-                m.disconnect();
-            }
-        }
-    });
-    m.observe(sidebarItems.element, {childList: true, subtree: true});
 
     var videoRenderer = document.createElement("ytd-compact-video-renderer");
     videoRenderer.data = firstVideo.compactVideoRenderer;
@@ -426,13 +424,10 @@ async function buildAutoplay() {
     const viewCount = primaryInfo.querySelector("ytd-video-view-count-renderer");
     const subBtn = secondaryInfo.querySelector("#subscribe-button tp-yt-paper-button");
     const uploadDate = secondaryInfo.querySelector(".date.ytd-video-secondary-info-renderer"); // Old unused element that we inject the date into
-    const language = yt.config_.HL.substring(0, 2) ?? "en";
+    const language = yt.config_.HL.split("-")[0] ?? "en";
 
     // Let script know we've done this initial build
     watchFlexy.setAttribute("watch9-built", "");
-
-    // Make view count large like in Watch9
-    viewCount.removeAttribute("small");
 
     // Publish date
     var newUploadDate = formatUploadDate(primaryInfo.data.dateText.simpleText, isVideoPublic(), language);
@@ -469,7 +464,7 @@ function updateWatch9() {
     const secondaryInfo = document.querySelector("ytd-video-secondary-info-renderer");
     const subCnt = secondaryInfo.querySelector("yt-formatted-string.deemphasize");
     const uploadDate = secondaryInfo.querySelector(".date.ytd-video-secondary-info-renderer");
-    const language = yt.config_.HL.substring(0, 2) ?? "en";
+    const language = yt.config_.HL.split("-")[0] ?? "en";
 
     // Publish date
     var newUploadDate = formatUploadDate(primaryInfo.data.dateText.simpleText, isVideoPublic(), language);
@@ -493,6 +488,10 @@ function updateWatch9() {
  */
 document.addEventListener("yt-page-data-updated", (e) => {
     if (e.detail.pageType == "watch") {
+        if (document.querySelector("ytd-compact-autoplay-renderer")) {
+            document.querySelector("ytd-compact-autoplay-renderer").remove();
+        }
+
         if (document.querySelector("ytd-watch-flexy").getAttribute("watch9-built") != null) {
             updateWatch9();
         } else {
@@ -516,6 +515,11 @@ document.addEventListener("DOMContentLoaded", function tmp() {
     #meta-contents[hidden],
     #info-contents[hidden] {
         display: block !important;
+    }
+
+    ytd-video-view-count-renderer[small] {
+        font-size: 1.6rem !important;
+        line-height: 2.2rem !important;
     }
 
     yt-formatted-string.deemphasize {
@@ -584,9 +588,14 @@ document.addEventListener("DOMContentLoaded", function tmp() {
         margin-left: 8px;
     }
 
-    ytd-watch-next-secondary-results-renderer #contents.ytd-item-section-renderer > :not(ytd-compact-autoplay-renderer) {
+    ytd-watch-next-secondary-results-renderer #contents.ytd-item-section-renderer > * {
         margin-top: 0 !important;
         margin-bottom: var(--ytd-item-section-item-margin,16px);
+    }
+
+    #items.ytd-watch-next-secondary-results-renderer > ytd-compact-video-renderer:first-of-type,
+    ytd-watch-next-secondary-results-renderer #contents.ytd-item-section-renderer > ytd-compact-video-renderer:first-of-type {
+        display: none !important;
     }
     </style>
     `);
