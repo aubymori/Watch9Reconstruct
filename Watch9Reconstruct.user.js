@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Watch9 Reconstruct
-// @version      2.5.0
+// @version      2.5.1
 // @description  Restores the old watch layout from before 2019
 // @author       Aubrey P.
 // @icon         https://www.youtube.com/favicon.ico
@@ -44,7 +44,7 @@ const w9rOptions = {
     pl: {
         subSuffixMatch: /( subskrybentów)|( subskrybent)/,
         nonPublishMatch: /(Data premiery: )|(adawane na żywo )|(Transmisja zaczęła się )/,
-        publishedOn: "Przesłany %s",
+        publishedOn: "Opublikowany %s",
         uploadedOn: "Przesłany %s",
         upNext: "Następny",
         autoplay: "Autoodtwarzanie",
