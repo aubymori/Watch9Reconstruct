@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Watch9 Reconstruct
-// @version      2.5.1
+// @version      b3.0.0
 // @description  Restores the old watch layout from before 2019
 // @author       Aubrey P.
 // @icon         https://www.youtube.com/favicon.ico
@@ -24,76 +24,76 @@ const w9rOptions = {
  */
  const w9ri18n = {
     en: {
-        subSuffixMatch: /( subscribers)|( subscriber)/,
-        nonPublishMatch: /(Premier)|(Stream)|(Start)/,
-        publishedOn: "Published on %s",
-        uploadedOn: "Uploaded on %s",
-        upNext: "Up next",
-        autoplay: "Autoplay",
-        autoplayTip: "When autoplay is enabled, a suggested video will automatically play next."
+        subCountIsolator: /( subscribers)|( subscriber)/,
+        uploadTypeMatch: /(Premier)|(Stream)|(Start)/,
+        dateTextPublic: "Published on %s",
+        dateTextPrivate: "Uploaded on %s",
+        autoplayTitle: "Up next",
+        autoplayToggleDesc: "Autoplay",
+        autoplayInfoText: "When autoplay is enabled, a suggested video will automatically play next."
     },
     ja: {
-        subSuffixMatch: /(チャンネル登録者数 )|(人)/g,
-        nonPublishMatch: /(公開済)|(開始済)/g,
-        publishedOn: "%s に公開",
-        uploadedOn: "%s にアップロード",
-        upNext: "自動再生",
-        autoplay: "次の動画",
-        autoplayTip: "自動再生を有効にすると、関連動画が自動的に再生されます。"
+        subCountIsolator: /(チャンネル登録者数 )|(人)/g,
+        uploadTypeMatch: /(公開済)|(開始済)/g,
+        dateTextPublic: "%s に公開",
+        dateTextPrivate: "%s にアップロード",
+        autoplayTitle: "自動再生",
+        autoplayToggleDesc: "次の動画",
+        autoplayInfoText: "自動再生を有効にすると、関連動画が自動的に再生されます。"
     },
     pl: {
-        subSuffixMatch: /( subskrybentów)|( subskrybent)/,
-        nonPublishMatch: /(Data premiery: )|(adawane na żywo )|(Transmisja zaczęła się )/,
-        publishedOn: "Opublikowany %s",
-        uploadedOn: "Przesłany %s",
-        upNext: "Następny",
-        autoplay: "Autoodtwarzanie",
-        autoplayTip: "Jeśli masz włączone autoodtwarzanie, jako następny włączy się automatycznie proponowany film."
+        subCountIsolator: /( subskrybentów)|( subskrybent)/,
+        uploadTypeMatch: /(Data premiery: )|(adawane na żywo )|(Transmisja zaczęła się )/,
+        dateTextPublic: "Opublikowany %s",
+        dateTextPrivate: "Przesłany %s",
+        autoplayTitle: "Następny",
+        autoplayToggleDesc: "Autoodtwarzanie",
+        autoplayInfoText: "Jeśli masz włączone autoodtwarzanie, jako następny włączy się automatycznie proponowany film."
     },
     fil: {
-        subSuffixMatch: /(na)|( subscribers)|( subscriber)|(\s)/g,
-        nonPublishMatch: /(simula)/,
-        publishedOn: "Na-publish noong %s",
-        uploadedOn: "Na-upload noong %s",
-        upNext: "Susunod",
-        autoplay: "I-autoplay",
-        autoplayTip: "Kapag naka-enable ang autoplay, awtomatikong susunod na magpe-play ang isang iminumungkahing video."
+        subCountIsolator: /(na)|( subscribers)|( subscriber)|(\s)/g,
+        uploadTypeMatch: /(simula)/,
+        dateTextPublic: "Na-publish noong %s",
+        dateTextPrivate: "Na-upload noong %s",
+        autoplayTitle: "Susunod",
+        autoplayToggleDesc: "I-autoplay",
+        autoplayInfoText: "Kapag naka-enable ang autoplay, awtomatikong susunod na magpe-play ang isang iminumungkahing video."
     },
     fr: {
-        subSuffixMatch: /( abonnés)|( abonné)|( d’abonnés)|( d’abonné)/g,
-        nonPublishMatch: /(Diffus)|(Sortie)/g,
-        publishedOn: "Publiée le %s",
-        uploadedOn: "Mise en ligne le %s",
-        upNext: "À suivre",
-        autoplay: "Lecture automatique",
-        autoplayTip: "Lorsque cette fonctionnalité est activée, une vidéo issue des suggestions est automatiquement lancée à la suite de la lecture en cours."
+        subCountIsolator: /( abonnés)|( abonné)|( d’abonnés)|( d’abonné)/g,
+        uploadTypeMatch: /(Diffus)|(Sortie)/g,
+        dateTextPublic: "Publiée le %s",
+        dateTextPrivate: "Mise en ligne le %s",
+        autoplayTitle: "À suivre",
+        autoplayToggleDesc: "Lecture automatique",
+        autoplayInfoText: "Lorsque cette fonctionnalité est activée, une vidéo issue des suggestions est automatiquement lancée à la suite de la lecture en cours."
     },
     es: {
-        subSuffixMatch: /( de suscriptores)|( suscriptor)/g,
-        nonPublishMatch: /(directo)|(Fecha)/g,
-        publishedOn: "Publicado el %s",
-        uploadedOn: "Subido el %s",
-        upNext: "A continuación",
-        autoplay: "Reproducción automática",
-        autoplayTip: "Si la reproducción automática está habilitada, se reproducirá automáticamente un vídeo a continuación."
+        subCountIsolator: /( de suscriptores)|( suscriptor)/g,
+        uploadTypeMatch: /(directo)|(Fecha)/g,
+        dateTextPublic: "Publicado el %s",
+        dateTextPrivate: "Subido el %s",
+        autoplayTitle: "A continuación",
+        autoplayToggleDesc: "Reproducción automática",
+        autoplayInfoText: "Si la reproducción automática está habilitada, se reproducirá automáticamente un vídeo a continuación."
     },
     pt: {
-        subSuffixMatch: /( de subscritores)|( subscritor)/g,
-        nonPublishMatch: /(Stream)|(Estreou)/g,
-        publishedOn: "Publicado a %s",
-        uploadedOn: "Carregado a %s",
-        upNext: "Próximo",
-        autoplay: "Reprodução automática",
-        autoplayTip: "Quando a reprodução automática é ativada, um vídeo sugerido será executado automaticamente em seguida."
+        subCountIsolator: /( de subscritores)|( subscritor)/g,
+        uploadTypeMatch: /(Stream)|(Estreou)/g,
+        dateTextPublic: "Publicado a %s",
+        dateTextPrivate: "Carregado a %s",
+        autoplayTitle: "Próximo",
+        autoplayToggleDesc: "Reprodução automática",
+        autoplayInfoText: "Quando a reprodução automática é ativada, um vídeo sugerido será executado automaticamente em seguida."
     },
     ru: {
-        subSuffixMatch: /( подписчиков)|( подписчик)/g,
-        nonPublishMatch: /(Сейчас смотрят:)|(Прямой эфир состоялся)|(Дата премьеры:)/g,
-        publishedOn: "Дата публикации: %s",
-        uploadedOn: "Дата публикации: %s",
-        upNext: "Следующее видео",
-        autoplay: "Автовоспроизведение",
-        autoplayTip: "Если функция включена, то следующий ролик начнет воспроизводиться автоматически."
+        subCountIsolator: /( подписчиков)|( подписчик)/g,
+        uploadTypeMatch: /(Сейчас смотрят:)|(Прямой эфир состоялся)|(Дата премьеры:)/g,
+        dateTextPublic: "Дата публикации: %s",
+        dateTextPrivate: "Дата публикации: %s",
+        autoplayTitle: "Следующее видео",
+        autoplayToggleDesc: "Автовоспроизведение",
+        autoplayInfoText: "Если функция включена, то следующий ролик начнет воспроизводиться автоматически."
     }
 };
 
@@ -121,18 +121,18 @@ async function waitForElm(selector, base = document) {
  * @returns {string}
  */
 function getString(string, hl = "en") {
-    if (!string) return "ERROR";
+    if (!string) return "";
     if (w9ri18n[hl]) {
         if (w9ri18n[hl][string]) {
             return w9ri18n[hl][string];
         } else if (w9ri18n.en[string]) {
             return w9ri18n.en[string];
         } else {
-            return "ERROR";
+            return "";
         }
     } else {
         if (w9ri18n.en[string]) return w9ri18n.en[string];
-        return "ERROR";
+        return "";
     }
 }
 
@@ -144,10 +144,10 @@ function getString(string, hl = "en") {
  * @param {string}  hl       Language to use.
  * @returns {string}
  */
-function formatUploadDate(dateStr, isPublic, hl = "en") {
-    var nonPublishMatch = getString("nonPublishMatch", hl);
-    var string = isPublic ? getString("publishedOn", hl) : getString("uploadedOn", hl);
-    if (nonPublishMatch.test(dateStr)) {
+function formatDateText(dateStr, isPublic, hl = "en") {
+    var uploadTypeMatch = getString("uploadTypeMatch", hl);
+    var string = isPublic ? getString("dateTextPublic", hl) : getString("dateTextPrivate", hl);
+    if (uploadTypeMatch.test(dateStr)) {
         return dateStr;
     } else {
         return string.replace("%s", dateStr);
@@ -161,9 +161,9 @@ function formatUploadDate(dateStr, isPublic, hl = "en") {
  * @param {string} hl     Language to use.
  * @returns {string}
  */
-function formatSubCount(count, hl = "en") {
+function formatSubscriberCount(count, hl = "en") {
     if (count == null) return "";
-    var tmp = count.replace(getString("subSuffixMatch", hl), "");
+    var tmp = count.replace(getString("subCountIsolator", hl), "");
     return tmp;
 }
 
@@ -219,24 +219,6 @@ function autoplayState() {
 }
 
 /**
- * Toggle autoplay.
- *
- * @returns {void}
- */
-function clickAutoplay() {
-    var player = document.querySelector("#movie_player");
-    var autoplay;
-    if (autoplay = player.querySelector(".ytp-autonav-toggle-button-container")) {
-        autoplay.parentNode.click();
-    } else {
-        var settings = player.querySelector('.ytp-settings-button');
-        settings.click();settings.click();
-        var item = player.querySelector('.ytp-menuitem[role="menuitemcheckbox"]');
-        item.click();
-    }
-}
-
-/**
  * Should the Autoplay renderer be inserted?
  * (Basically, if there's a playlist active)
  *
@@ -256,7 +238,8 @@ function shouldHaveAutoplay() {
 }
 
 /**
- * Is a value in an array?
+ * Is a value in an array? Exactly like the
+ * PHP equivalent, minus the strict param.
  * 
  * @param {*}     needle    Value to search
  * @param {Array} haystack  Array to search
@@ -270,42 +253,14 @@ function inArray(needle, haystack) {
 }
 
 /**
- * Remove bloaty action buttons.
- *
- * @returns {void}
- */
-function removeBloatButtons() {
-    var primaryInfo = document.querySelector("ytd-video-primary-info-renderer");
-    var actionBtns = primaryInfo.data.videoActions.menuRenderer.topLevelButtons;
-
-    // Remove the action buttons accordingly.
-    for (var i = 0; i < actionBtns.length; i++) {
-        if (actionBtns[i].downloadButtonRenderer) {
-            actionBtns.splice(i, 1);
-            i--;
-        } else if (actionBtns[i].buttonRenderer) {
-            if (inArray(actionBtns[i].buttonRenderer.icon.iconType, ["MONEY_HEART", "CONTENT_CUT"])) {
-                actionBtns.splice(i, 1);
-                i--;
-            }
-        }
-    }
-
-    // Refresh the primary info's data.
-    var tmp = primaryInfo.data;
-    primaryInfo.data = {};
-    primaryInfo.data = tmp;
-}
-
-/**
  * Is the current video public? Or is it unlisted/private?
  *
  * @returns {boolean}
  */
 function isVideoPublic() {
-    const primaryInfo = document.querySelector("ytd-video-primary-info-renderer");
+    var primaryInfo = document.querySelector("ytd-video-primary-info-renderer");
     if (primaryInfo.data.badges == null) return true;
-    const badges = primaryInfo.data.badges;
+    var badges = primaryInfo.data.badges;
 
     for (var i = 0; i < badges.length; i++) {
         var iconType = badges[i].metadataBadgeRenderer.icon.iconType;
@@ -317,187 +272,99 @@ function isVideoPublic() {
 }
 
 /**
- * Get sidebar data.
- *
- * @returns {object}
+ * Force Polymer to rebuild element based on new data
+ * 
+ * @param {Node} element  Element to refresh data of.
+ * @returns {void}
  */
-async function getSidebarData() {
-    const secondaryResults = document.querySelector("ytd-watch-next-secondary-results-renderer");
-    const resultData = secondaryResults.data.results;
-    var response = {};
-
-    if (yt.config_.LOGGED_IN == false) {
-        response.element = await waitForElm("#items.ytd-watch-next-secondary-results-renderer");
-        response.data = resultData;
-        response.class = "ytd-watch-next-secondary-results-renderer";
-        return response;
-    } else {
-        var tmp;
-        if (tmp = resultData[0].relatedChipCloudRenderer) {
-            response.element = await waitForElm("#contents.ytd-item-section-renderer", secondaryResults);
-            response.data = resultData[1].itemSectionRenderer.contents;
-            response.class = "ytd-item-section-renderer";
-            return response;
-        } else {
-            response.element = await waitForElm("#items.ytd-watch-next-secondary-results-renderer");
-            response.data = resultData;
-            response.class = "ytd-watch-next-secondary-results-renderer";
-            return response;
-        }
-    }
+function refreshData(element) {
+    if (!element.nodeName) return;
+    var tmp = element.data;
+    element.data = {};
+    element.data = tmp;
 }
 
 /**
- * Build the classic compact autoplay renderer.
- *
- * @returns {void}
+ * Format a subscriber count text object from InnerTube
+ * to include the subscriber count.
+ * 
+ * @param {object} text   InnerTube text object.
+ * @param {string} count  Subscriber count string.
  */
-async function buildAutoplay() {
-    // Prevent it from building autoplay twice
-    if (document.querySelector("ytd-compact-autoplay-renderer") != null) return;
-
-    const watchFlexy = document.querySelector("ytd-watch-flexy");
-    const sidebarItems = await getSidebarData();
-    const language = yt.config_.HL.split("-")[0] ?? "en";
-    const autoplayStub = `
-    <ytd-compact-autoplay-renderer class="style-scope ${ sidebarItems.class }">
-        <div id="head" class="style-scope ytd-compact-autoplay-renderer">
-            <div id="upnext" class="style-scope ytd-compact-autoplay-renderer"></div>
-            <div id="autoplay" class="style-scope ytd-compact-autoplay-renderer"></div>
-            <tp-yt-paper-toggle-button id="toggle" noink="" class="style-scope ytd-compact-autoplay-renderer" role="button" aria-pressed="" tabindex="0" style="touch-action: pan-y;" toggles="" aria-disabled="false" aria-label="">
-                <tp-yt-paper-tooltip id="tooltip" class="style-scope ytd-compact-autoplay-renderer" role="tooltip" tabindex="-1">${ getString("autoplayTip", language) }</tp-yt-paper-tooltip>
-            </tp-yt-paper-toggle-button>
-        </div>
-        <div id="contents" class="style-scope ytd-compact-autoplay-renderer"></div>
-    </ytd-compact-autoplay-renderer>
-    `;
-
-
-    // Insert the autoplay stub.
-    sidebarItems.element.insertAdjacentHTML("beforebegin", autoplayStub);
-    var autoplayRenderer = sidebarItems.element.parentNode.querySelector("ytd-compact-autoplay-renderer");
-
-    // Apply the appropriate localized text.
-    autoplayRenderer.querySelector("#upnext").innerText = getString("upNext", language);
-    autoplayRenderer.querySelector("#autoplay").innerText = getString("autoplay", language);
-
-    // Add event listener to toggle
-    autoplayRenderer.querySelector("#toggle").addEventListener("click", clickAutoplay);
-
-    // Copy first video from data into autoplay renderer
-    var firstVideo;
-    for (var i = 0; i < sidebarItems.data.length; i++) {
-        if (sidebarItems.data[i].compactVideoRenderer) {
-            firstVideo = sidebarItems.data[i];
-            break;
-        }
-    }
-
-    var videoRenderer = document.createElement("ytd-compact-video-renderer");
-    videoRenderer.data = firstVideo.compactVideoRenderer;
-    videoRenderer.classList.add("style-scope", "ytd-compact-autoplay-renderer")
-    videoRenderer.setAttribute("lockup", "true");
-    videoRenderer.setAttribute("thumbnail-width", "168");
-    autoplayRenderer.querySelector("#contents").appendChild(videoRenderer);
-
-    // Add the interval to update toggle if it isn't already.
-    if (!watchFlexy.getAttribute("autoplay-interval-active")) {
-        setInterval(() => {
-            if (autoplayState()) {
-                autoplayRenderer.querySelector("#toggle").setAttribute("checked", "");
-            } else {
-                autoplayRenderer.querySelector("#toggle").removeAttribute("checked");
+function formatSubscriberButtonText(text, count) {
+    return (count != null && typeof count == "string") ? {
+        runs: [
+            {
+                text: (text.runs[0].text ?? "") + " "
+            },
+            {
+                text: count,
+                deemphasize: true
             }
-        }, 100);
-    }
+        ]
+    } : text;
 }
 
 /**
- * Build new Watch9 elements and tweak currently existing elements accordingly.
- *
+ * Update the watch page
+ * 
  * @returns {void}
  */
- function buildWatch9() {
-    const watchFlexy = document.querySelector("ytd-watch-flexy");
-    const primaryInfo = watchFlexy.querySelector("ytd-video-primary-info-renderer");
-    const secondaryInfo = watchFlexy.querySelector("ytd-video-secondary-info-renderer");
-    const viewCount = primaryInfo.querySelector("ytd-video-view-count-renderer");
-    const subBtn = secondaryInfo.querySelector("#subscribe-button tp-yt-paper-button");
-    const uploadDate = secondaryInfo.querySelector(".date.ytd-video-secondary-info-renderer"); // Old unused element that we inject the date into
-    const language = yt.config_.HL.split("-")[0] ?? "en";
+async function updateWatch() {
+    var primaryInfo   = document.querySelector("ytd-video-primary-info-renderer"),
+        secondaryInfo = document.querySelector("ytd-video-secondary-info-renderer"),
+        language      = yt.config_.HL.split("-")[0] ?? "en",
+        country       = yt.config_.GL ?? "US";
+        
+    // Date text
+    var dateText = formatDateText(primaryInfo.data.dateText.simpleText, isVideoPublic(), language);
+    secondaryInfo.data.dateText = {
+        simpleText: dateText
+    };
+    delete primaryInfo.data.dateText;
 
-    // Let script know we've done this initial build
-    watchFlexy.setAttribute("watch9-built", "");
+    // Subscriber count text
+    // This check is to determine if it's the subscribe button
+    // or the edit video button
+    if (secondaryInfo.data.subscribeButton.subscribeButtonRenderer) {
+        var subscriberCount = formatSubscriberCount(secondaryInfo.data.owner.videoOwnerRenderer.subscriberCountText.simpleText);
+        var subscribeButton = secondaryInfo.data.subscribeButton.subscribeButtonRenderer;
 
-    // Publish date
-    var newUploadDate = formatUploadDate(primaryInfo.data.dateText.simpleText, isVideoPublic(), language);
-    uploadDate.innerText = newUploadDate;
-
-    // Sub count
-    var newSubCount;
-    if (secondaryInfo.data.owner.videoOwnerRenderer.subscriberCountText) {
-        newSubCount = formatSubCount(secondaryInfo.data.owner.videoOwnerRenderer.subscriberCountText.simpleText, language);
-    } else {
-        newSubCount = "0";
+        subscribeButton.buttonText = formatSubscriberButtonText(subscribeButton.buttonText, subscriberCount);
+        subscribeButton.subscribedButtonText = formatSubscriberButtonText(subscribeButton.subscribedButtonText, subscriberCount);
+        subscribeButton.unsubscribeButtonText = formatSubscriberButtonText(subscribeButton.unsubscribeButtonText, subscriberCount);
+        subscribeButton.unsubscribedButtonText = formatSubscriberButtonText(subscribeButton.unsubscribedButtonText, subscriberCount);
     }
-    var w9rSubCount = document.createElement("yt-formatted-string");
-    w9rSubCount.classList.add("style-scope", "deemphasize");
-    w9rSubCount.text = {
-        simpleText: newSubCount
-    };
-    subBtn.insertAdjacentElement("beforeend", w9rSubCount);
+    delete secondaryInfo.data.owner.videoOwnerRenderer.subscriberCountText;
 
     // Bloat buttons
-    if (w9rOptions.removeBloatButtons) removeBloatButtons();
+    if (w9rOptions.removeBloatButtons) {
+        var actionButtons = primaryInfo.data.videoActions.menuRenderer.topLevelButtons;
 
-    // Autoplay
-    if (w9rOptions.oldAutoplay && shouldHaveAutoplay()) buildAutoplay();
-}
+        for (var i = 0; i < actionButtons.length; i++) {
+            if (actionButtons[i].downloadButtonRenderer) {
+                actionButtons.splice(i, 1);
+                i--;
+            } else if (actionButtons[i].buttonRenderer) {
+                if (inArray(actionButtons[i].buttonRenderer.icon.iconType, ["MONEY_HEART", "CONTENT_CUT"])) {
+                    actionButtons.splice(i, 1);
+                    i--;
+                }
+            }
+        }
+    }
 
-/**
- * Update currently existing Watch9 elements.
- *
- * @returns {void}
- */
-function updateWatch9() {
-    const primaryInfo = document.querySelector("ytd-video-primary-info-renderer");
-    const secondaryInfo = document.querySelector("ytd-video-secondary-info-renderer");
-    const subCnt = secondaryInfo.querySelector("yt-formatted-string.deemphasize");
-    const uploadDate = secondaryInfo.querySelector(".date.ytd-video-secondary-info-renderer");
-    const language = yt.config_.HL.split("-")[0] ?? "en";
-
-    // Publish date
-    var newUploadDate = formatUploadDate(primaryInfo.data.dateText.simpleText, isVideoPublic(), language);
-    uploadDate.innerText = newUploadDate;
-
-    // Sub count
-    var newSubCount = formatSubCount(secondaryInfo.data.owner.videoOwnerRenderer.subscriberCountText.simpleText, language);
-    subCnt.text = {
-        simpleText: newSubCount
-    };
-
-    // Bloat buttons
-    if (w9rOptions.removeBloatButtons) removeBloatButtons();
-
-    // Autoplay
-    if (w9rOptions.oldAutoplay && shouldHaveAutoplay()) buildAutoplay();
+    // Make Polymer use new data.
+    refreshData(primaryInfo);
+    refreshData(secondaryInfo);
 }
 
 /**
  * Run the Watch9 build/update functions.
  */
 document.addEventListener("yt-page-data-updated", (e) => {
-    if (e.detail.pageType == "watch") {
-        if (document.querySelector("ytd-compact-autoplay-renderer")) {
-            document.querySelector("ytd-compact-autoplay-renderer").remove();
-        }
-
-        if (document.querySelector("ytd-watch-flexy").getAttribute("watch9-built") != null) {
-            updateWatch9();
-        } else {
-            buildWatch9();
-        }
-    }
+    if (e.detail.pageType == "watch")
+        updateWatch();
 });
 
 /**
@@ -522,80 +389,8 @@ document.addEventListener("DOMContentLoaded", function tmp() {
         line-height: 2.2rem !important;
     }
 
-    yt-formatted-string.deemphasize {
-        opacity: .85;
-        margin-left: 6px;
-    }
-
-    yt-formatted-string.deemphasize:empty {
-        margin-left: 0;
-    }
-
-    /**
-     * Prevent sub count from appearing on the "Edit video" button since
-     * it uses the same element as subscribe button
-     */
-    ytd-button-renderer.style-primary yt-formatted-string.deemphasize {
-        display: none;
-    }
-
-    #info-strings.ytd-video-primary-info-renderer,
-    #owner-sub-count.ytd-video-owner-renderer {
-        display: none !important;
-    }
-    </style>
-    `);
-    if (w9rOptions.oldAutoplay) document.head.insertAdjacentHTML("beforeend", `
-    <style id="compact-autoplay-fix">
-    yt-related-chip-cloud-renderer {
-        display: none;
-    }
-
-    ytd-compact-autoplay-renderer {
-        padding-bottom: 8px;
-        border-bottom: 1px solid var(--yt-spec-10-percent-layer);
-        margin-bottom: 16px;
-        display: flex;
-        flex-direction: column;
-    }
-
-    ytd-compact-autoplay-renderer ytd-compact-video-renderer {
-        margin: 0 !important;
-        padding-bottom: 8px;
-    }
-
-    #head.ytd-compact-autoplay-renderer {
-        margin-bottom: 12px;
-        display: flex;
-        align-items: center;
-    }
-
-    #upnext.ytd-compact-autoplay-renderer {
-        color: var(--yt-spec-text-primary);
-        font-size: 1.6rem;
-        flex-grow: 1;
-    }
-
-    #autoplay.ytd-compact-autoplay-renderer {
-        color: var(--yt-spec-text-secondary);
-        font-size: 1.3rem;
-        font-weight: 500;
-        text-transform: uppercase;
-        line-height: 1;
-    }
-
-    #toggle.ytd-compact-autoplay-renderer {
-        margin-left: 8px;
-    }
-
-    ytd-watch-next-secondary-results-renderer #contents.ytd-item-section-renderer > * {
-        margin-top: 0 !important;
-        margin-bottom: var(--ytd-item-section-item-margin,16px);
-    }
-
-    #items.ytd-watch-next-secondary-results-renderer > ytd-compact-video-renderer:first-of-type,
-    ytd-watch-next-secondary-results-renderer #contents.ytd-item-section-renderer > ytd-compact-video-renderer:first-of-type {
-        display: none !important;
+    ytd-subscribe-button-renderer {
+        --yt-formatted-string-deemphasize-color: rgb(255 255 255 / 85%);
     }
     </style>
     `);
