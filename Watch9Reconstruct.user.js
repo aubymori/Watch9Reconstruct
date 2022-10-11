@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Watch9 Reconstruct
-// @version      2.5.1
+// @version      2.5.2
 // @description  Restores the old watch layout from before 2019
 // @author       Aubrey P.
 // @icon         https://www.youtube.com/favicon.ico
@@ -94,7 +94,25 @@ const w9rOptions = {
         upNext: "Следующее видео",
         autoplay: "Автовоспроизведение",
         autoplayTip: "Если функция включена, то следующий ролик начнет воспроизводиться автоматически."
-    }
+    },
+    hu: {
+        subSuffixMatch: /( előfizetők)|( előfizető)/,
+        nonPublishMatch: /(Megjelenés dátuma: )|(Élő adás )|(Az adás elkezdődött )/,
+        publishedOn: "Közzététel: %s",
+        uploadedOn: "Feltöltvel: %s",
+        upNext: "Következő",
+        autoplay: "Automatikus lejátszás",
+        autoplayTip: "Ha engedélyezte az automatikus lejátszást, a javasolt film automatikusan aktiválódik a következő filmként."
+    },
+    de: {
+        subSuffixMatch: /( Abonnenten)|( Abonnent)/,
+        nonPublishMatch: /(Premier)|(Stream)|(Start)/,
+        publishedOn: "Am %s veröffentlicht",
+        uploadedOn: "Am %s hochgeladen",
+        upNext: "Nächstes Video",
+        autoplay: "Autoplay",
+        autoplayTip: "Wenn die Autoplay aktiviert ist, wird als nächstes automatisch ein vorgeschlagenes Video abgespielt."
+   }
 };
 
 /**
