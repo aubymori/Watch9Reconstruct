@@ -112,6 +112,7 @@ const w9rOptions = {
         upNext: "Nächstes Video",
         autoplay: "Autoplay",
         autoplayTip: "Wenn die Autoplay aktiviert ist, wird als nächstes automatisch ein vorgeschlagenes Video abgespielt."
+   }
 };
 
 /**
