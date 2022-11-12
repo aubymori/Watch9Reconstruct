@@ -41,6 +41,15 @@ const w9rOptions = {
         autoplay: "次の動画",
         autoplayTip: "自動再生を有効にすると、関連動画が自動的に再生されます。"
     },
+    ko: {
+        subSuffixMatch: /구독자\s/,
+        nonPublishMatch: /(최초\s공개)|(실시간 스트리밍)/,
+        publishedOn: "게시일: %s",
+        uploadedOn: "업로드: %s",
+        upNext: "다음 동영상",
+        autoplay: "자동재생",
+        autoplayTip: "자동 재생을 켜면, 다음 동영상이 자동으로 재생됩니다."
+    },
     pl: {
         subSuffixMatch: /( subskrybentów)|( subskrybent)/,
         nonPublishMatch: /(Data premiery: )|(adawane na żywo )|(Transmisja zaczęła się )/,
